@@ -1,6 +1,9 @@
 
  import 'dart:io';
  import 'package:bosala/data/model/product_model.dart';
+import 'package:bosala/presentation/chat/model/message_model.dart';
+import 'package:bosala/styles/color_manager.dart';
+import 'package:bosala/widget/toast.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:bloc/bloc.dart';
 import 'package:bosala/business_logic/App_cubit/app_states.dart';
@@ -11,6 +14,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:sqflite/sqflite.dart';
 
 class AppCubit extends Cubit<AppStates>{
 
@@ -282,7 +286,6 @@ class AppCubit extends Cubit<AppStates>{
   }
 
   void uploadProduct({
-
     required String productName,
     required String productPrice,
     required String productDescription,
@@ -319,6 +322,7 @@ class AppCubit extends Cubit<AppStates>{
     });
 
   }
+
 
 
   List<bool> isFavorites= List.generate(30, (index) => false);
@@ -361,5 +365,205 @@ class AppCubit extends Cubit<AppStates>{
 
   }
 
+
+
+  Database ?database;
+  List <Map>  allFavorite=[];
+
+
+  void createDatabase() async {
+
+    return await openDatabase(
+        'favorite.db',
+        version: 1,
+        onCreate: (database,version){
+          database.execute(
+              'CREATE TABLE favorite (id INTEGER PRIMARY KEY , name TEXT , distance TEXT, image TEXT, favorite TEXT)'
+          ).then((value) {
+            print('Table Created');
+            emit(CreateTableState());
+          });
+        },
+        onOpen: (database){
+
+          getAllFavorite(database).then((value){
+            allFavorite=value;
+          }).catchError((error){
+            print('error i ${error.toString()}');
+          });
+          print('Database Opened');
+        }
+
+    ).then((value) {
+      database=value;
+      print('Database Created');
+      emit(CreateDatabaseSuccessState());
+    }).catchError((error){
+      print('error is ${error.toString()}');
+      emit(CreateDatabaseErrorState());
+
+    });
+  }
+
+  Future addToFavorite({
+    required String name,
+    required String distance,
+    required String image,
+    required context,
+  }) async{
+
+    return database?.transaction((txn) {
+      return txn.rawInsert(
+          'INSERT INTO favorite (name,distance,image,favorite) VALUES ( "$name" , "$distance" , "$image" , "yes")'
+      ).then((value) {
+        print("${value} Insert Success");
+        emit(InsertDatabaseSuccessState());
+        getAllFavorite(database).then((value){
+          allFavorite=value;
+        });
+        customToast(title: 'item added to favorite', color: ColorManager.red);
+        emit(InsertDatabaseSuccessState());
+
+      }).catchError((error){
+        print('Error is ${error.toString()}');
+      });
+
+    });
+
+  }
+
+
+  Future <List<Map>> getAllFavorite(database)async {
+
+    allFavorite=[];
+
+
+    return await database?.rawQuery(
+        'SELECT * FROM favorite'
+    ).then((value) {
+
+      value.forEach((element){
+        allFavorite.add(element);
+      });
+
+      print(allFavorite);
+      emit(GetDatabaseSuccessState());
+    }).catchError((error){
+      print('GetError is ${error.toString()}');
+    });
+  }
+
+
+  Future deleteFromFavorite({required String name,required context})async{
+
+    return await database?.rawDelete('DELETE FROM favorite WHERE name = ?', [name]).then((value) {
+      debugPrint('Item Deleted');
+      customToast(title:'item removed', color: ColorManager.red);
+      getAllFavorite(database).then((value) {
+        allFavorite=value;
+      });
+      emit(DeleteDatabaseSuccessState());
+    });
+
+  }
+
+  List<UserModel> users = [];
+
+  void getAllUser(){
+    emit(GetAllUserLoadingStates());
+
+    FirebaseFirestore.instance
+        .collection('Users')
+        .get()
+        .then((value) {
+      debugPrint('Get User Success');
+
+      for (var element in value.docs) {
+        if(element.id != CashHelper.getData(key: 'uId')){
+          users.add(UserModel.fromFire(element.data()));
+        }
+      }
+
+      debugPrint('All user is : ${users.length}');
+      emit(GetAllUserSuccessStates());
+
+    }).catchError((error){
+
+      debugPrint('Error in Get All User is:${error.toString()}');
+      emit(GetAllUserErrorStates());
+
+    });
+  }
+
+
+  TextEditingController messageController = TextEditingController();
+
+
+  void sendMessage({
+    required String receiverId ,
+    required String dateTime ,
+    required String message,
+  })
+  {
+    MessageModel model = MessageModel(
+      receiverId: receiverId,
+      senderId: userModel!.uId!,
+      message: message,
+      dateTime: dateTime,
+    );
+
+    FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userModel!.uId)
+        .collection('chats')
+        .doc(receiverId)
+        .collection('messages')
+        .add(model.toMap())
+        .then((value) {
+      emit(SendMessageSuccessState());
+    })
+        .catchError((error){
+      emit(SendMessageErrorState());
+    });
+
+
+    FirebaseFirestore.instance
+        .collection('Users')
+        .doc(receiverId)
+        .collection('chats')
+        .doc(userModel!.uId)
+        .collection('messages')
+        .add(model.toMap())
+        .then((value) {
+      emit(SendMessageSuccessState());
+    }).catchError((error){
+      emit(SendMessageErrorState());
+    });
+
+
+  }
+
+
+  List<MessageModel> messages = [];
+
+
+  void getMessages ({required String receiverId ,})
+  {
+    FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userModel!.uId)
+        .collection('chats')
+        .doc(receiverId)
+        .collection('messages')
+        .orderBy('dateTime')
+        .snapshots()
+        .listen((event) {
+      messages = [];
+      for (var element in event.docs) {
+        messages.add(MessageModel.fromJson(element.data()));
+      }
+      emit(GetMessagesSuccessState());
+    });
+  }
 
 }

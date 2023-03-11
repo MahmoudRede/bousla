@@ -49,3 +49,30 @@
  class GetProductErrorStates extends AppStates{}
 
 
+ class CreateTableState  extends AppStates{}
+ class CreateDatabaseSuccessState  extends AppStates{}
+ class CreateDatabaseErrorState  extends AppStates{}
+ class InsertDatabaseSuccessState  extends AppStates{}
+ class InsertDatabaseErrorState  extends AppStates{}
+ class GetDatabaseSuccessState  extends AppStates{}
+ class GetDatabaseErrorState  extends AppStates{}
+
+ class UpdateDatabaseSuccessState  extends AppStates{}
+
+ class UpdateFavoriteSuccessState  extends AppStates{}
+
+ class DeleteDatabaseSuccessState  extends AppStates{}
+
+
+ class GetAllUserLoadingStates extends AppStates{}
+ class GetAllUserSuccessStates extends AppStates{}
+ class GetAllUserErrorStates extends AppStates{}
+
+
+ class SendMessageSuccessState extends AppStates{}
+ class SendMessageErrorState extends AppStates{}
+
+ class GetMessagesSuccessState extends AppStates{}
+ class GetMessagesErrorState extends AppStates{}
+
+

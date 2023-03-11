@@ -1,6 +1,8 @@
 import 'package:bosala/business_logic/App_cubit/app_cubit.dart';
 import 'package:bosala/business_logic/App_cubit/app_states.dart';
 import 'package:bosala/presentation/about_app/about_app.dart';
+import 'package:bosala/presentation/chat/screen/users_screen.dart';
+import 'package:bosala/presentation/favorite/favorite_screen.dart';
 import 'package:bosala/presentation/profile_screen/profile_screen.dart';
 import 'package:bosala/presentation/start_screen/start_screen.dart';
 import 'package:bosala/styles/color_manager.dart';
@@ -63,7 +65,7 @@ class ServicesScreen extends StatelessWidget {
                         GestureDetector(
                           onTap: (){
                             Navigator.push(context, MaterialPageRoute(builder: (_){
-                              return ProfileScreen();
+                              return const ProfileScreen();
                             }));
                           },
                           child: Padding(
@@ -75,8 +77,55 @@ class ServicesScreen extends StatelessWidget {
                                     fontSize: MediaQuery.of(context).size.height*.024,
                                     color: ColorManager.textColor
                                 ),),
-                                Spacer(),
-                                Icon(Icons.arrow_back_ios,color: ColorManager.primaryColor)
+                                const Spacer(),
+                                const Icon(Icons.arrow_back_ios,color: ColorManager.primaryColor)
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // favorite
+                        GestureDetector(
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (_){
+                              return const FavoriteScreen();
+                            }));
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
+                              children: [
+                                Text('المفضلة',style: GoogleFonts.almarai(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: MediaQuery.of(context).size.height*.024,
+                                    color: ColorManager.textColor
+                                ),),
+                                const Spacer(),
+                                const Icon(Icons.arrow_back_ios,color: ColorManager.primaryColor)
+                              ],
+                            ),
+                          ),
+                        ),
+
+
+                        // chat
+                        GestureDetector(
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (_){
+                              return const UsersScreen();
+                            }));
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
+                              children: [
+                                Text('المحادثات',style: GoogleFonts.almarai(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: MediaQuery.of(context).size.height*.024,
+                                    color: ColorManager.textColor
+                                ),),
+                                const Spacer(),
+                                const Icon(Icons.arrow_back_ios,color: ColorManager.primaryColor)
                               ],
                             ),
                           ),
@@ -101,8 +150,8 @@ class ServicesScreen extends StatelessWidget {
                                     fontSize: MediaQuery.of(context).size.height*.024,
                                     color: ColorManager.textColor
                                 ),),
-                                Spacer(),
-                                Icon(Icons.arrow_back_ios,color: ColorManager.primaryColor)
+                                const Spacer(),
+                                const Icon(Icons.arrow_back_ios,color: ColorManager.primaryColor)
                               ],
                             ),
                           ),
@@ -130,8 +179,8 @@ class ServicesScreen extends StatelessWidget {
                                     fontSize: MediaQuery.of(context).size.height*.024,
                                     color: ColorManager.textColor
                                 ),),
-                                Spacer(),
-                                Icon(Icons.arrow_back_ios,color: ColorManager.primaryColor)
+                                const Spacer(),
+                                const Icon(Icons.arrow_back_ios,color: ColorManager.primaryColor)
                               ],
                             ),
                           ),
@@ -158,8 +207,8 @@ class ServicesScreen extends StatelessWidget {
                                     fontSize: MediaQuery.of(context).size.height*.024,
                                     color: ColorManager.textColor
                                 ),),
-                                Spacer(),
-                                Icon(Icons.arrow_back_ios,color: ColorManager.primaryColor)
+                                const Spacer(),
+                                const Icon(Icons.arrow_back_ios,color: ColorManager.primaryColor)
                               ],
                             ),
                           ),
@@ -187,8 +236,8 @@ class ServicesScreen extends StatelessWidget {
                                     fontSize: MediaQuery.of(context).size.height*.024,
                                     color: ColorManager.textColor
                                 ),),
-                                Spacer(),
-                                Icon(Icons.arrow_back_ios,color: ColorManager.primaryColor)
+                                const Spacer(),
+                                const Icon(Icons.arrow_back_ios,color: ColorManager.primaryColor)
                               ],
                             ),
                           ),
@@ -209,8 +258,8 @@ class ServicesScreen extends StatelessWidget {
                                     fontSize: MediaQuery.of(context).size.height*.024,
                                     color: ColorManager.textColor
                                 ),),
-                                Spacer(),
-                                Icon(Icons.arrow_back_ios,color: ColorManager.primaryColor)
+                                const Spacer(),
+                                const Icon(Icons.arrow_back_ios,color: ColorManager.primaryColor)
                               ],
                             ),
                           ),
@@ -219,30 +268,41 @@ class ServicesScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+
                 body: Container(
+                  padding: EdgeInsets.all(MediaQuery.of(context).size.height*0.02),
                     child: Column(
                         children: [
                     Expanded(
                     child: GridView.count(
-                    crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        childAspectRatio: 1/1.22,
+                    crossAxisSpacing: MediaQuery.of(context).size.height*0.01,
+                        mainAxisSpacing: MediaQuery.of(context).size.height*0.01,
+                        childAspectRatio: 1/1.6,
                         crossAxisCount: 2,
                         children: List.generate(cubit.allProducts.length, (index) => Container(
+                          padding: EdgeInsets.symmetric(vertical:MediaQuery.of(context).size.height*0.01),
                     decoration: BoxDecoration(
                     border: Border.all(color: ColorManager.textColor),
-                    borderRadius: BorderRadius.circular(12)
+                    borderRadius: BorderRadius.circular(MediaQuery.of(context).size.height*0.012)
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GestureDetector(
                       onTap: (){
+                        cubit.addToFavorite(
+                            name: cubit.allProducts[index].productName.toString(),
+                            distance: cubit.allProducts[index].productPrice.toString(),
+                            image: cubit.allProducts[index].productImage.toString(),
+                            context: context,
+                        );
                         cubit.switchFavorites(index);
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: cubit.isFavorites[index]==true? Icon(Icons.favorite,color: Colors.red,):Icon(Icons.favorite_border,color: Colors.red,),
+                        child: cubit.isFavorites[index]==true?
+                        const Icon(Icons.favorite,color: Colors.red,):
+                        const Icon(Icons.favorite_border,color: Colors.red,),
                       ),
                     ),
                      Image(
@@ -252,7 +312,7 @@ class ServicesScreen extends StatelessWidget {
                        width: MediaQuery.of(context).size.width,
                     ),
 
-                    SizedBox(height: 15,),
+                    const SizedBox(height: 15,),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Row(
@@ -264,7 +324,7 @@ class ServicesScreen extends StatelessWidget {
                               color: ColorManager.white,
                             )),
                           ),
-                          Text('${cubit.allProducts[index].productPrice!}Om',style:GoogleFonts.almarai(
+                          Text('${cubit.allProducts[index].productPrice!} Om',style:GoogleFonts.almarai(
                             fontSize: 18,
                             fontWeight: FontWeight.w500,
                             color: ColorManager.red,
